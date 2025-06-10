@@ -30,6 +30,17 @@ Body: {
 
 The API is deployed using AWS API Gateway HTTP APIs with Lambda proxy integration.
 
+## OpenAPI Documentation Hosting
+Generate and deploy documentation using:
+
+```bash
+make openapi-docs
+```
+
+Docs will be live at:
+```
+https://<cloudfront-domain>/
+```
 
 ## Kafka Integration
 Kafka support is ready for future use. See `src/adapters/kafka_adapter.py` once implemented.
