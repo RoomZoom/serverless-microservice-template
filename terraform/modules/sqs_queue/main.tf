@@ -1,0 +1,4 @@
+# terraform/modules/sqs_queue/main.tf
+resource "aws_sqs_queue" "this" {
+  name = var.name
+}

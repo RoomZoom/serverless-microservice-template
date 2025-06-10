@@ -1,0 +1,7 @@
+boto3
+fastapi
+kafka-python
+moto
+pydantic
+pytest
+uvicorn
