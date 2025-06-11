@@ -11,6 +11,8 @@ def send_message(queue_url, message_body):
     validated, errors = validate_model(QueueMessage, message_body)
     if errors:
         raise ValueError(f"Invalid queue message: {errors}")
+    if validated is None:
+        raise ValueError("Validation failed but no errors returned")
     return sqs.send_message(
         QueueUrl=queue_url, MessageBody=json.dumps(validated.dict())
     )
