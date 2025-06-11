@@ -53,7 +53,7 @@ jobs:
     - name: Run code formatting check
       run: |
         black --check src/ tests/
-        isort --check-only src/ tests/
+        isort --profile black --check-only src/ tests/
         
     - name: Run linting
       run: make lint
