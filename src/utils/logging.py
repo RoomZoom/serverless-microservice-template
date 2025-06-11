@@ -3,14 +3,14 @@ import logging
 import json
 import sys
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Union
 from utils.config import get_env_variable
 
 
 class JSONFormatter(logging.Formatter):
     """Custom JSON formatter for structured logging"""
 
-    def __init__(self, service_name: str = None, environment: str = None):
+    def __init__(self, service_name: Optional[str] = None, environment: Optional[str] = None):
         super().__init__()
         self.service_name = service_name or get_env_variable(
             "SERVICE_NAME", "microservice"
@@ -73,7 +73,7 @@ class JSONFormatter(logging.Formatter):
 class CorrelationFilter(logging.Filter):
     """Filter to add correlation ID to log records"""
 
-    def __init__(self, correlation_id: str = None):
+    def __init__(self, correlation_id: Optional[str] = None):
         super().__init__()
         self.correlation_id = correlation_id
 
@@ -85,11 +85,11 @@ class CorrelationFilter(logging.Filter):
 
 
 def setup_logging(
-    level: str = None,
-    service_name: str = None,
-    environment: str = None,
-    use_json: bool = None,
-    correlation_id: str = None,
+    level: Optional[str] = None,
+    service_name: Optional[str] = None,
+    environment: Optional[str] = None,
+    use_json: Optional[bool] = None,
+    correlation_id: Optional[str] = None,
 ) -> logging.Logger:
     """
     Setup structured logging for the microservice
@@ -105,9 +105,9 @@ def setup_logging(
         Configured logger instance
     """
     # Get configuration from environment if not provided
-    level = level or get_env_variable("LOG_LEVEL", "INFO")
-    service_name = service_name or get_env_variable("SERVICE_NAME", "microservice")
-    environment = environment or get_env_variable("ENVIRONMENT", "dev")
+    level = level or get_env_variable("LOG_LEVEL", "INFO") or "INFO"
+    service_name = service_name or get_env_variable("SERVICE_NAME", "microservice") or "microservice"
+    environment = environment or get_env_variable("ENVIRONMENT", "dev") or "dev"
 
     # Use JSON formatting by default in production
     if use_json is None:
@@ -160,13 +160,13 @@ def configure_library_loggers():
     logging.getLogger("kafka").setLevel(logging.WARNING)
 
     # Reduce FastAPI/uvicorn logging noise in production
-    environment = get_env_variable("ENVIRONMENT", "dev")
+    environment = get_env_variable("ENVIRONMENT", "dev") or "dev"
     if environment.lower() == "prod":
         logging.getLogger("uvicorn").setLevel(logging.WARNING)
         logging.getLogger("fastapi").setLevel(logging.WARNING)
 
 
-def get_logger(name: str, correlation_id: str = None) -> logging.Logger:
+def get_logger(name: str, correlation_id: Optional[str] = None) -> logging.Logger:
     """
     Get a logger instance with optional correlation ID
 

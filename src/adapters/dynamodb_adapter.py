@@ -16,5 +16,7 @@ def put_item(table_name, item_dict):
     validated, errors = validate_model(CreateItemRequest, item_dict)
     if errors:
         raise ValueError(f"Invalid item format: {errors}")
+    if validated is None:
+        raise ValueError("Validation failed but no errors returned")
     table = dynamodb.Table(table_name)
     return table.put_item(Item=validated.dict())

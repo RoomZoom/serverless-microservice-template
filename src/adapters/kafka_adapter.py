@@ -33,6 +33,8 @@ class KafkaAdapter:
     def _get_producer(self):
         """Get or create Kafka producer"""
         if not self.producer:
+            if not self.bootstrap_servers:
+                raise ValueError("Bootstrap servers not configured")
             try:
                 self.producer = KafkaProducer(
                     bootstrap_servers=self.bootstrap_servers.split(","),
@@ -50,6 +52,8 @@ class KafkaAdapter:
 
     def _get_consumer(self, topic, group_id=None, auto_offset_reset="latest"):
         """Get or create Kafka consumer"""
+        if not self.bootstrap_servers:
+            raise ValueError("Bootstrap servers not configured")
         try:
             consumer = KafkaConsumer(
                 topic,
@@ -73,6 +77,8 @@ class KafkaAdapter:
             validated, errors = validate_model(KafkaMessage, message_data)
             if errors:
                 raise ValueError(f"Invalid Kafka message format: {errors}")
+            if validated is None:
+                raise ValueError("Validation failed but no errors returned")
 
             producer = self._get_producer()
 
