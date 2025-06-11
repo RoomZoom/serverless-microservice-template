@@ -80,10 +80,20 @@ jobs:
   test-dev-deploy:
     name: Test Dev Deployment
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && secrets.AWS_ACCESS_KEY_ID != ''
     needs: validate
     
     steps:
+    - name: Check AWS credentials
+      run: |
+        if [ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ]; then
+          echo "⚠️ AWS credentials not configured - skipping deployment testing"
+          echo "This is expected for template repositories"
+          echo "Configure AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY secrets to enable deployment testing"
+          exit 0
+        fi
+        echo "✅ AWS credentials configured - proceeding with deployment testing"
+        
     - name: Checkout code
       uses: actions/checkout@v4
       

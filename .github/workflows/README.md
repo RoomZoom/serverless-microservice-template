@@ -18,7 +18,9 @@ The main CI/CD pipeline that handles:
 
 ## Required Secrets
 
-Configure these in your GitHub repository settings:
+### For Full CI/CD Pipeline (Optional for Template Usage)
+
+Configure these in your GitHub repository settings to enable deployment testing and automatic deployments:
 
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
@@ -28,6 +30,8 @@ Configure these in your GitHub repository settings:
 - `STAGING_KAFKA_BOOTSTRAP_SERVERS`
 - `PROD_KAFKA_CLUSTER_ARN`
 - `PROD_KAFKA_BOOTSTRAP_SERVERS`
+
+**Note**: The "Validate Code Quality" job runs without AWS credentials. Deployment testing and automatic deployments require AWS credentials to be configured.
 
 ## Environment Protection
 

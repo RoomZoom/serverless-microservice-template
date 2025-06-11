@@ -11,7 +11,11 @@ The CI/CD pipeline implements a 3-environment strategy:
 
 ## Required GitHub Secrets
 
-Configure these secrets in your GitHub repository settings (`Settings > Secrets and variables > Actions`):
+### For Template Usage (Basic Validation Only)
+No secrets are required for basic code quality validation. The "Validate Code Quality" job will run without any configuration.
+
+### For Full CI/CD Pipeline (Deployment Testing & Auto-Deploy)
+Configure these secrets in your GitHub repository settings (`Settings > Secrets and variables > Actions`) to enable deployment features:
 
 ### AWS Credentials
 ```
