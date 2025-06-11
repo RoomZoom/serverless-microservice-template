@@ -80,7 +80,7 @@ jobs:
   test-dev-deploy:
     name: Test Dev Deployment
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && secrets.AWS_ACCESS_KEY_ID != ''
+    if: github.event_name == 'pull_request'
     needs: validate
     
     steps:
