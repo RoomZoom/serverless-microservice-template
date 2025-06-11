@@ -1,8 +1,9 @@
 # src/api/api_handler.py
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
-from models.payload_models import CreateItemRequest, ItemCreatedEvent
-from adapters import dynamodb_adapter, sqs_adapter, kafka_adapter
+from models.payload_models import CreateItemRequest
+from adapters import dynamodb_adapter, kafka_adapter
+from services.core_logic import process_item_creation
 from utils.config import get_env_variable
 import logging
 import uuid
@@ -48,36 +49,18 @@ async def create_item(request: Request):
             f"Processing create request for item {item.id}, correlation_id: {correlation_id}"
         )
 
-        # Store in DynamoDB
-        dynamodb_result = dynamodb_adapter.put_item(TABLE_NAME, item.dict())
-        logger.info(f"Item stored in DynamoDB: {item.id}")
-
-        # Send to SQS for async processing
-        sqs_result = sqs_adapter.send_message(
-            QUEUE_URL,
-            {"id": item.id, "action": "created", "correlation_id": correlation_id},
+        table_name = TABLE_NAME or f"my-table-{ENVIRONMENT}"
+        queue_url = QUEUE_URL or f"https://sqs.us-east-1.amazonaws.com/123456789012/my-queue-{ENVIRONMENT}"
+        kafka_topic = KAFKA_TOPIC or f"microservice-events-{ENVIRONMENT}"
+        service_name = SERVICE_NAME or "microservice-template"
+        
+        result = process_item_creation(
+            item, table_name, queue_url, kafka_topic, service_name, correlation_id
         )
-        logger.info(f"Message sent to SQS: {item.id}")
-
-        # Publish event to Kafka
-        event = ItemCreatedEvent.from_create_request(item, SERVICE_NAME, correlation_id)
-        kafka_result = kafka_adapter.send_message(
-            KAFKA_TOPIC, event.dict(), key=item.id
-        )
-        logger.info(f"Event published to Kafka: {item.id}")
 
         return JSONResponse(
             status_code=201,
-            content={
-                "message": "Item created successfully",
-                "item_id": item.id,
-                "correlation_id": correlation_id,
-                "results": {
-                    "dynamodb": "success",
-                    "sqs": "success",
-                    "kafka": "success",
-                },
-            },
+            content=result,
         )
 
     except ValueError as e:

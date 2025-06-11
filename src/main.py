@@ -2,8 +2,8 @@
 import json
 import logging
 import uuid
-from adapters import dynamodb_adapter, sqs_adapter, kafka_adapter
-from models.payload_models import CreateItemRequest, ItemCreatedEvent
+from models.payload_models import CreateItemRequest
+from services.core_logic import process_item_creation
 from utils.config import get_env_variable
 
 # Configure logging
@@ -73,7 +73,7 @@ def handle_api_gateway_event(event, context, correlation_id):
         item = CreateItemRequest(**body)
 
         # Process the item creation
-        result = process_item_creation(item, correlation_id)
+        result = process_item_creation_wrapper(item, correlation_id)
 
         return {
             "statusCode": 201,
@@ -144,7 +144,7 @@ def handle_direct_invocation(event, context, correlation_id):
     try:
         # Assume direct invocation contains item data
         item = CreateItemRequest(**event)
-        result = process_item_creation(item, correlation_id)
+        result = process_item_creation_wrapper(item, correlation_id)
 
         return {"statusCode": 200, "body": json.dumps(result)}
 
@@ -163,44 +163,16 @@ def handle_direct_invocation(event, context, correlation_id):
         }
 
 
-def process_item_creation(item: CreateItemRequest, correlation_id: str):
-    """
-    Core business logic for item creation
-    Handles DynamoDB storage, SQS messaging, and Kafka event publishing
-    """
-    try:
-        logger.info(
-            f"Processing item creation: {item.id}, correlation_id: {correlation_id}"
-        )
-
-        # Store in DynamoDB
-        dynamodb_adapter.put_item(TABLE_NAME, item.dict())
-        logger.info(f"Item stored in DynamoDB: {item.id}")
-
-        # Send to SQS for async processing
-        sqs_adapter.send_message(
-            QUEUE_URL,
-            {"id": item.id, "action": "created", "correlation_id": correlation_id},
-        )
-        logger.info(f"Message sent to SQS: {item.id}")
-
-        # Publish event to Kafka
-        event = ItemCreatedEvent.from_create_request(item, SERVICE_NAME, correlation_id)
-        kafka_adapter.send_message(KAFKA_TOPIC, event.dict(), key=item.id)
-        logger.info(f"Event published to Kafka: {item.id}")
-
-        return {
-            "message": "Item created and events published successfully",
-            "item_id": item.id,
-            "correlation_id": correlation_id,
-            "services": {"dynamodb": "success", "sqs": "success", "kafka": "success"},
-        }
-
-    except Exception as e:
-        logger.error(
-            f"Error in process_item_creation: {str(e)}, correlation_id: {correlation_id}"
-        )
-        raise
+def process_item_creation_wrapper(item: CreateItemRequest, correlation_id: str):
+    """Wrapper for the core business logic"""
+    table_name = TABLE_NAME or f"my-table-{ENVIRONMENT}"
+    queue_url = QUEUE_URL or f"https://sqs.us-east-1.amazonaws.com/123456789012/my-queue-{ENVIRONMENT}"
+    kafka_topic = KAFKA_TOPIC or f"microservice-events-{ENVIRONMENT}"
+    service_name = SERVICE_NAME or "microservice-template"
+    
+    return process_item_creation(
+        item, table_name, queue_url, kafka_topic, service_name, correlation_id
+    )
 
 
 def process_record(record, correlation_id):
