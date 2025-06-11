@@ -357,11 +357,86 @@ The documentation will be available at your CloudFront distribution URL.
 
 ## 🔄 Creating New Microservices
 
-Use this template to create new microservices:
+### Option 1: Full Customization (Recommended)
+
+Use the interactive script to create a fully customized microservice with custom resource names:
+
+```bash
+make create-custom-service
+```
+
+This will prompt you for:
+- **Service name**: The base name for your microservice (e.g., `user-management`)
+- **Lambda handler**: Custom handler path (default: `main.handler`)
+- **DynamoDB table name**: Custom table name (default: `{service-name}-table`)
+- **SQS queue name**: Custom queue name (default: `{service-name}-queue`)
+- **Kafka topic names**: Main topic and DLQ topic names
+- **API Gateway name**: Custom API name (default: `{service-name}-api`)
+- **Target directory**: Where to create the new service
+
+The script will:
+✅ Copy the entire template structure  
+✅ Replace all hardcoded resource names throughout the codebase  
+✅ Update Terraform configurations with your custom names  
+✅ Modify source code to use your custom resource names  
+✅ Update documentation and configuration files  
+
+### Option 2: Basic Template Copy (Legacy)
+
+For simple service name replacement only:
 
 ```bash
 make create-template
 # Follow the prompts to create a new service
+```
+
+### Example: Creating a User Management Service
+
+```bash
+$ make create-custom-service
+
+🚀 Creating a new microservice from serverless-microservice-template
+============================================================
+Enter new service name (e.g., 'user-management'): user-management
+Lambda handler [default: main.handler]: user.handler
+DynamoDB table name [default: user-management-table]: users
+SQS queue name [default: user-management-queue]: user-processing
+Kafka main topic [default: user-management-events]: user-events
+Kafka DLQ topic [default: user-management-dlq]: user-dlq
+API Gateway name [default: user-management-api]: user-api
+Target directory [default: ../user-management]: ../user-management
+
+📋 Configuration Summary:
+------------------------------
+service_name   : user-management
+lambda_handler : user.handler
+dynamodb_table : users
+sqs_queue      : user-processing
+kafka_topic    : user-events
+kafka_dlq      : user-dlq
+api_gateway    : user-api
+target_dir     : ../user-management
+
+Proceed with these settings? [Y/n]: y
+
+📁 Copying template to /path/to/user-management...
+🔄 Processing 45 files...
+  ✅ Makefile
+  ✅ README.md
+  ✅ src/main.py
+  ✅ src/api/api_handler.py
+  ✅ terraform/dev/main.tf
+  ... (and more)
+
+🎉 Successfully created 'user-management' service!
+📁 Location: /path/to/user-management
+📝 Modified 23 files
+
+🚀 Next steps:
+1. cd /path/to/user-management
+2. make init
+3. Configure your MSK cluster details in terraform/dev/main.tf
+4. make deploy-dev
 ```
 
 ## 🛡️ Security Best Practices
