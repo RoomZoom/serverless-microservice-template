@@ -1,7 +1,8 @@
 # src/adapters/dynamodb_adapter.py
 import boto3
-from models.payload_models import CreateItemRequest
-from models.validation import validate_model
+
+from src.models.payload_models import CreateItemRequest
+from src.models.validation import validate_model
 
 dynamodb = boto3.resource("dynamodb")
 

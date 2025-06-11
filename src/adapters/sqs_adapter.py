@@ -1,8 +1,10 @@
 # src/adapters/sqs_adapter.py
-import boto3
-from models.payload_models import QueueMessage
-from models.validation import validate_model
 import json
+
+import boto3
+
+from src.models.payload_models import QueueMessage
+from src.models.validation import validate_model
 
 sqs = boto3.client("sqs")
 

@@ -1,16 +1,19 @@
 # src/utils/logging.py
-import logging
 import json
+import logging
 import sys
 from datetime import datetime
-from typing import Dict, Any, Optional, Union
+from typing import Dict, Optional
+
 from utils.config import get_env_variable
 
 
 class JSONFormatter(logging.Formatter):
     """Custom JSON formatter for structured logging"""
 
-    def __init__(self, service_name: Optional[str] = None, environment: Optional[str] = None):
+    def __init__(
+        self, service_name: Optional[str] = None, environment: Optional[str] = None
+    ):
         super().__init__()
         self.service_name = service_name or get_env_variable(
             "SERVICE_NAME", "microservice"
@@ -106,7 +109,11 @@ def setup_logging(
     """
     # Get configuration from environment if not provided
     level = level or get_env_variable("LOG_LEVEL", "INFO") or "INFO"
-    service_name = service_name or get_env_variable("SERVICE_NAME", "microservice") or "microservice"
+    service_name = (
+        service_name
+        or get_env_variable("SERVICE_NAME", "microservice")
+        or "microservice"
+    )
     environment = environment or get_env_variable("ENVIRONMENT", "dev") or "dev"
 
     # Use JSON formatting by default in production
@@ -126,6 +133,7 @@ def setup_logging(
     console_handler.setLevel(getattr(logging, level.upper()))
 
     # Set formatter
+    formatter: logging.Formatter
     if use_json:
         formatter = JSONFormatter(service_name, environment)
     else:
@@ -242,7 +250,7 @@ class CorrelationContext:
 
     def __init__(self, correlation_id: str):
         self.correlation_id = correlation_id
-        self.original_filters = {}
+        self.original_filters: Dict[logging.Handler, CorrelationFilter] = {}
 
     def __enter__(self):
         # Add correlation filter to all existing handlers

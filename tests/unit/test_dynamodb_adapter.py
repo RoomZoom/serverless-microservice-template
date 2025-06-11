@@ -1,7 +1,19 @@
 # tests/unit/test_dynamodb_adapter.py
+from unittest.mock import patch, Mock
+
 from src.adapters import dynamodb_adapter
 
 
-def test_get_item_returns_none_for_missing():
+@patch("src.adapters.dynamodb_adapter.dynamodb")
+def test_get_item_returns_none_for_missing(mock_dynamodb):
+    """Test that get_item returns None for missing items"""
+    mock_table = Mock()
+    mock_table.get_item.return_value = {"ResponseMetadata": {"HTTPStatusCode": 200}}
+    mock_dynamodb.Table.return_value = mock_table
+
     item = dynamodb_adapter.get_item("fake-table", {"id": "nonexistent"})
+
+    mock_dynamodb.Table.assert_called_once_with("fake-table")
+    mock_table.get_item.assert_called_once_with(Key={"id": "nonexistent"})
+
     assert item is None
