@@ -18,7 +18,7 @@ NC = \033[0m # No Color
 help: ## Show this help message
 	@echo "$(BLUE)Serverless Python Microservice Template$(NC)"
 	@echo "$(YELLOW)Available targets:$(NC)"
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(GREEN)%-25s$(NC) %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 # Development Setup
 .PHONY: init
@@ -250,7 +250,9 @@ validate-env: ## Validate environment configuration
 	@echo "$(GREEN)Environment validation completed$(NC)"
 
 .PHONY: create-template
-create-template: ## Create a new microservice from this template
+create-template: ## Create a new microservice from this template (legacy - use create-custom-service instead)
+	@echo "$(YELLOW)This is the legacy template creation method.$(NC)"
+	@echo "$(BLUE)For full customization, use: make create-custom-service$(NC)"
 	@read -p "Enter new service name: " service_name && \
 	if [ -z "$$service_name" ]; then \
 		echo "$(RED)Service name cannot be empty$(NC)"; \
@@ -262,6 +264,11 @@ create-template: ## Create a new microservice from this template
 	sed -i.bak "s/microservice-template/$$service_name/g" Makefile README.md && \
 	rm -f Makefile.bak README.md.bak && \
 	echo "$(GREEN)New microservice '$$service_name' created in ../$$service_name$(NC)"
+
+.PHONY: create-custom-service
+create-custom-service: ## Create a fully customized microservice with custom resource names
+	@echo "$(BLUE)Creating customized microservice...$(NC)"
+	@python3 create_custom_service.py
 
 # Default target
 .DEFAULT_GOAL := help
