@@ -4,8 +4,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from src.adapters.kafka_adapter import KafkaAdapter
-from src.models.payload_models import (CreateItemRequest, ItemCreatedEvent,
-                                       KafkaMessage)
+from src.models.payload_models import CreateItemRequest, ItemCreatedEvent, KafkaMessage
 
 
 class TestKafkaAdapter:

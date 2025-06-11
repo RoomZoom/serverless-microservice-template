@@ -1,5 +1,5 @@
 # tests/unit/test_dynamodb_adapter.py
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 from src.adapters import dynamodb_adapter
 
