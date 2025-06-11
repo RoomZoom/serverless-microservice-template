@@ -2,9 +2,10 @@
 import json
 import logging
 import uuid
-from models.payload_models import CreateItemRequest
-from services.core_logic import process_item_creation
-from utils.config import get_env_variable
+
+from src.models.payload_models import CreateItemRequest
+from src.services.core_logic import process_item_creation
+from src.utils.config import get_env_variable
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -97,7 +98,8 @@ def handle_api_gateway_event(event, context, correlation_id):
         }
     except Exception as e:
         logger.error(
-            f"Error processing API Gateway event: {str(e)}, correlation_id: {correlation_id}"
+            f"Error processing API Gateway event: {str(e)}, "
+            f"correlation_id: {correlation_id}"
         )
         return {
             "statusCode": 500,
@@ -166,10 +168,13 @@ def handle_direct_invocation(event, context, correlation_id):
 def process_item_creation_wrapper(item: CreateItemRequest, correlation_id: str):
     """Wrapper for the core business logic"""
     table_name = TABLE_NAME or f"my-table-{ENVIRONMENT}"
-    queue_url = QUEUE_URL or f"https://sqs.us-east-1.amazonaws.com/123456789012/my-queue-{ENVIRONMENT}"
+    queue_url = (
+        QUEUE_URL
+        or f"https://sqs.us-east-1.amazonaws.com/123456789012/my-queue-{ENVIRONMENT}"
+    )
     kafka_topic = KAFKA_TOPIC or f"microservice-events-{ENVIRONMENT}"
     service_name = SERVICE_NAME or "microservice-template"
-    
+
     return process_item_creation(
         item, table_name, queue_url, kafka_topic, service_name, correlation_id
     )

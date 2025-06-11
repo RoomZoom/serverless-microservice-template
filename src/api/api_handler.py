@@ -1,12 +1,14 @@
 # src/api/api_handler.py
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
-from models.payload_models import CreateItemRequest
-from adapters import dynamodb_adapter, kafka_adapter
-from services.core_logic import process_item_creation
-from utils.config import get_env_variable
 import logging
 import uuid
+
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
+
+from src.adapters import dynamodb_adapter, kafka_adapter
+from src.models.payload_models import CreateItemRequest
+from src.services.core_logic import process_item_creation
+from src.utils.config import get_env_variable
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -46,14 +48,19 @@ async def create_item(request: Request):
         item = CreateItemRequest(**data)
 
         logger.info(
-            f"Processing create request for item {item.id}, correlation_id: {correlation_id}"
+            f"Processing create request for item {item.id}, "
+            f"correlation_id: {correlation_id}"
         )
 
         table_name = TABLE_NAME or f"my-table-{ENVIRONMENT}"
-        queue_url = QUEUE_URL or f"https://sqs.us-east-1.amazonaws.com/123456789012/my-queue-{ENVIRONMENT}"
+        queue_url = (
+            QUEUE_URL
+            or f"https://sqs.us-east-1.amazonaws.com/123456789012/"
+            f"my-queue-{ENVIRONMENT}"
+        )
         kafka_topic = KAFKA_TOPIC or f"microservice-events-{ENVIRONMENT}"
         service_name = SERVICE_NAME or "microservice-template"
-        
+
         result = process_item_creation(
             item, table_name, queue_url, kafka_topic, service_name, correlation_id
         )

@@ -1,9 +1,10 @@
 # tests/unit/test_kafka_adapter.py
+from unittest.mock import Mock, patch
+
 import pytest
-import json
-from unittest.mock import Mock, patch, MagicMock
-from src.adapters.kafka_adapter import KafkaAdapter, kafka_adapter
-from src.models.payload_models import KafkaMessage, ItemCreatedEvent, CreateItemRequest
+
+from src.adapters.kafka_adapter import KafkaAdapter
+from src.models.payload_models import CreateItemRequest, ItemCreatedEvent, KafkaMessage
 
 
 class TestKafkaAdapter:
@@ -55,12 +56,8 @@ class TestKafkaAdapter:
         assert producer == mock_producer
         mock_producer_class.assert_called_once_with(
             bootstrap_servers=["localhost:9092", "localhost:9093"],
-            value_serializer=kafka_adapter_instance._get_producer().__class__.call_args[
-                1
-            ]["value_serializer"],
-            key_serializer=kafka_adapter_instance._get_producer().__class__.call_args[
-                1
-            ]["key_serializer"],
+            value_serializer=mock_producer_class.call_args[1]["value_serializer"],
+            key_serializer=mock_producer_class.call_args[1]["key_serializer"],
             retries=3,
             retry_backoff_ms=100,
             request_timeout_ms=30000,
@@ -288,12 +285,14 @@ class TestKafkaAdapterIntegration:
 # Test convenience functions
 class TestConvenienceFunctions:
 
-    @patch("src.adapters.kafka_adapter.kafka_adapter")
-    def test_send_message_function(self, mock_adapter):
+    @patch("src.adapters.kafka_adapter.get_kafka_adapter")
+    def test_send_message_function(self, mock_get_adapter):
         """Test the convenience send_message function"""
         from src.adapters.kafka_adapter import send_message
 
+        mock_adapter = Mock()
         mock_adapter.send_message.return_value = {"status": "success"}
+        mock_get_adapter.return_value = mock_adapter
 
         result = send_message("test-topic", {"test": "data"}, "test-key")
 
@@ -302,12 +301,14 @@ class TestConvenienceFunctions:
         )
         assert result == {"status": "success"}
 
-    @patch("src.adapters.kafka_adapter.kafka_adapter")
-    def test_consume_messages_function(self, mock_adapter):
+    @patch("src.adapters.kafka_adapter.get_kafka_adapter")
+    def test_consume_messages_function(self, mock_get_adapter):
         """Test the convenience consume_messages function"""
         from src.adapters.kafka_adapter import consume_messages
 
+        mock_adapter = Mock()
         mock_adapter.consume_messages.return_value = [{"message": "data"}]
+        mock_get_adapter.return_value = mock_adapter
 
         result = consume_messages("test-topic", "test-group", 5)
 

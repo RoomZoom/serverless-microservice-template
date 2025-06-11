@@ -1,8 +1,9 @@
 # src/utils/config.py
 import os
+from typing import Dict, Optional
+
 import boto3
 from botocore.exceptions import ClientError
-from typing import Optional, Dict
 
 _env_cache: Dict[str, Optional[str]] = {}
 
@@ -21,13 +22,13 @@ def get_env_variable(name: str, default: Optional[str] = None) -> Optional[str]:
 def get_secret(secret_name: str) -> str:
     """Get SSM parameter with caching and client reuse"""
     global _ssm_client
-    
+
     if secret_name in _ssm_cache:
         return _ssm_cache[secret_name]
-    
+
     if _ssm_client is None:
         _ssm_client = boto3.client("ssm")
-    
+
     try:
         param = _ssm_client.get_parameter(Name=secret_name, WithDecryption=True)
         value = param["Parameter"]["Value"]
@@ -39,6 +40,5 @@ def get_secret(secret_name: str) -> str:
 
 def clear_cache():
     """Clear all caches (useful for testing)"""
-    global _env_cache, _ssm_cache
     _env_cache.clear()
     _ssm_cache.clear()

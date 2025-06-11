@@ -1,6 +1,7 @@
 # src/models/validation.py
+from typing import Any, Optional, Tuple
+
 from pydantic import ValidationError
-from typing import Tuple, Optional, Any
 
 
 def validate_model(model_cls, data) -> Tuple[Optional[Any], Optional[str]]:

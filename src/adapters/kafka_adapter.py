@@ -1,11 +1,13 @@
 # src/adapters/kafka_adapter.py
 import json
 import logging
-from kafka import KafkaProducer, KafkaConsumer
+
+from kafka import KafkaConsumer, KafkaProducer
 from kafka.errors import KafkaError
-from models.payload_models import KafkaMessage
-from models.validation import validate_model
-from utils.config import get_secret, get_env_variable
+
+from src.models.payload_models import KafkaMessage
+from src.models.validation import validate_model
+from src.utils.config import get_env_variable, get_secret
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +91,9 @@ class KafkaAdapter:
             record_metadata = future.get(timeout=10)
 
             logger.info(
-                f"Message sent to topic {topic}, partition {record_metadata.partition}, offset {record_metadata.offset}"
+                f"Message sent to topic {topic}, "
+                f"partition {record_metadata.partition}, "
+                f"offset {record_metadata.offset}"
             )
             return {
                 "topic": record_metadata.topic,
@@ -149,14 +153,26 @@ class KafkaAdapter:
             logger.error(f"Error closing Kafka connections: {str(e)}")
 
 
-# Singleton instance for reuse
-kafka_adapter = KafkaAdapter()
+# Lazy singleton instance for reuse
+_kafka_adapter = None
+
+
+def get_kafka_adapter():
+    """Get or create the Kafka adapter singleton"""
+    global _kafka_adapter
+    if _kafka_adapter is None:
+        _kafka_adapter = KafkaAdapter()
+    return _kafka_adapter
 
 
 # Convenience functions for backward compatibility
 def send_message(topic, message_data, key=None):
-    return kafka_adapter.send_message(topic, message_data, key)
+    return get_kafka_adapter().send_message(topic, message_data, key)
 
 
 def consume_messages(topic, group_id=None, max_messages=10):
-    return kafka_adapter.consume_messages(topic, group_id, max_messages)
+    return get_kafka_adapter().consume_messages(topic, group_id, max_messages)
+
+
+# For backward compatibility
+kafka_adapter = get_kafka_adapter

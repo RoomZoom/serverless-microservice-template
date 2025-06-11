@@ -1,7 +1,8 @@
 # src/models/payload_models.py
-from pydantic import BaseModel, Field
-from typing import Optional, Any, Dict
 from datetime import datetime
+from typing import Any, Dict, Literal, Optional
+
+from pydantic import BaseModel, Field
 
 
 class CreateItemRequest(BaseModel):
@@ -41,7 +42,7 @@ class KafkaMessage(BaseModel):
 class ItemCreatedEvent(KafkaMessage):
     """Specific event for item creation"""
 
-    event_type: str = Field(default="item.created", const=True)
+    event_type: Literal["item.created"] = Field(default="item.created")
 
     @classmethod
     def from_create_request(
@@ -61,10 +62,10 @@ class ItemCreatedEvent(KafkaMessage):
 class ItemUpdatedEvent(KafkaMessage):
     """Specific event for item updates"""
 
-    event_type: str = Field(default="item.updated", const=True)
+    event_type: Literal["item.updated"] = Field(default="item.updated")
 
 
 class ItemDeletedEvent(KafkaMessage):
     """Specific event for item deletion"""
 
-    event_type: str = Field(default="item.deleted", const=True)
+    event_type: Literal["item.deleted"] = Field(default="item.deleted")
